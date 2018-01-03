@@ -1,11 +1,14 @@
 package com.rohailkabani.shopifyinventory;
 
+import java.net.URI;
+
 /**
  * Created by rohailkabani on 2018-01-03.
  */
 
 public class FeedEntry {
-    private String image, description, title;
+    private String description, title, image;
+//    private URI image;
 
     public String getImage() {
         return image;
