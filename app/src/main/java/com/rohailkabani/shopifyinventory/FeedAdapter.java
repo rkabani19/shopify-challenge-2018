@@ -10,56 +10,70 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 /**
  * Created by rohailkabani on 2018-01-03.
  */
 
-public class FeedAdapter extends ArrayAdapter<FeedEntry> {
-    private ArrayList<FeedEntry> feedEntries;
-    private LayoutInflater layoutInflater;
-    private int resource;
-    private ViewHolder holder;
-    View view;
-    int gen = 0;
+public class FeedAdapter<T extends ListItem> extends ArrayAdapter {
+    private static final String TAG = "FeedAdapter";
+    private final int layoutResource;
+    private final LayoutInflater layoutInflater;
+    private List<T> application;
+    private Context context;
 
-    private static class ViewHolder {
-        TextView tvTitle;
-        TextView tvDescription;
-        ImageView imgProduct;
-    }
-
-    public FeedAdapter(Context context, int resource, ArrayList<FeedEntry> feedEntries) {
-        super(context, resource, feedEntries);
-        this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.resource = resource;
-        this.feedEntries = feedEntries;
+    public FeedAdapter(@NonNull Context context, int resource, List<T> application) {
+        super(context, resource);
+        this.layoutResource = resource;
+        this.layoutInflater = LayoutInflater.from(context);
+        this.application = application;
+        this.context = context;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
+    public int getCount() {
+        return application.size();
+    }
 
-        if (v == null) {
-            holder = new ViewHolder();
-            v = layoutInflater.inflate(resource, null);
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        ViewHolder viewHolder;
+        if (convertView == null) {
+            convertView = layoutInflater.inflate(layoutResource, parent, false);
 
-            holder.tvTitle = (TextView) v.findViewById(R.id.tvTitle);
-            holder.tvDescription = (TextView) v.findViewById(R.id.tvDescription);
-            holder.imgProduct = (ImageView) v.findViewById(R.id.imgProduct);
-
-            v.setTag(holder);
+            viewHolder = new ViewHolder(convertView);
+            convertView.setTag(viewHolder);
         } else {
-            holder = (ViewHolder) v.getTag();
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        holder.tvTitle.setText(feedEntries.get(position).getTitle());
-        holder.tvDescription.setText(feedEntries.get(position).getTitle());
-//        holder.imgProduct.setText(feedEntries.get(position).getImage());
+        T currentApp = application.get(position);
 
+        viewHolder.tvTitle.setText(currentApp.getTitle());
+        viewHolder.tvDescription.setText(currentApp.getDescription());
+//        viewHolder.img.setText(currentApp.getImgURL());
 
-        return super.getView(position, convertView, parent);
+        Picasso.with(context).load(currentApp.getImgURL()).into(viewHolder.img);
+
+        return convertView;
     }
+
+
+    private class ViewHolder {
+        final TextView tvTitle;
+        final TextView tvDescription;
+        final ImageView img;
+
+        ViewHolder(View v) {
+            this.tvTitle = (TextView) v.findViewById(R.id.tvTitle);
+            this.tvDescription = (TextView) v.findViewById(R.id.tvDescription2);
+            this.img = (ImageView) v.findViewById(R.id.imgProduct);
+        }
+    }
+
+
+
 }
