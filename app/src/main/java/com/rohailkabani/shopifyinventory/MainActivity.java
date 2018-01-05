@@ -4,7 +4,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -21,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
     private static String url = "https://shopicruit.myshopify.com/admin/products.json?page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6";
-    ArrayList<ListItem> listItems;
+    private ArrayList<ListItem> listItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listItems = new ArrayList<>();
-
         listView = (ListView) findViewById(R.id.listView);
 
         new DownloadData().execute();
@@ -49,6 +52,41 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+
+        MenuItem search = menu.findItem(R.id.item_search);
+        SearchView searchView = (SearchView) search.getActionView();
+//        SearchView searchView = (SearchView) MenuItemCompat.getActionView(search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList<ListItem> temp = new ArrayList<>();
+
+                for (ListItem temp2 : listItems) {
+                    if(temp2.getTitle().toLowerCase().startsWith(newText.toLowerCase())) {
+                        temp.add(temp2);
+                    }
+                }
+
+                FeedAdapter<ListItem> feedAdapter = new FeedAdapter<>(MainActivity.this, R.layout.list_item, temp);
+                listView.setAdapter(feedAdapter);
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     private class DownloadData extends AsyncTask<Void, Void, Void> {
@@ -121,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
 
             FeedAdapter<ListItem> feedAdapter = new FeedAdapter<>(MainActivity.this, R.layout.list_item, listItems);
-
             listView.setAdapter(feedAdapter);
         }
     }
